@@ -34,3 +34,9 @@ lldb ./build/demo
 ```
 
 CMake/lldb 是否可用取决于本机工具安装。网页编译不依赖 CMake。当前仅实现第一阶段，没有后续 LLM/GPU 课程。
+
+## 版本与复习记录
+
+源码仓库：https://github.com/MoonJiao123/ai_infra_learning_path 。学习记录区可写反思并导出完成课、预测答案与最近 30 次失败摘要；导出文件不包含全部草稿，代码请另行复制备份。每周提醒由 Codex 协调聊天另行设置，网站本身没有后台提醒服务。
+
+验证：运行服务后在另一个终端运行 `python3 verify.py`。详见 VALIDATION.md。参考答案/测试源码集中在 lessons.json，服务在 server.py，交互与持久化在 app.js。
