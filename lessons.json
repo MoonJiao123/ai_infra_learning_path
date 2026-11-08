@@ -87,8 +87,8 @@
     "id": 4,
     "week": 2,
     "title": "栈、堆与生命周期",
-    "explain": "第 4 课用 p 保存地址，用 *p 访问那个地址上的对象。现在加一个问题：对象能活多久，谁负责结束它的生命？局部 int 活到离开它所在的花括号，复制它的地址也不会延长生命周期。用 new 创建的对象可以活过当前作用域，但程序必须安排一次 delete。承担清理责任的一方就是所有者。",
-    "concept": "int x = 7;\nint* p = &x;  // 借用：x 由作用域管理，不要 delete p\n\nint* owner = new int(7);\nint* observer = owner;  // 又一个地址副本\nstd::cout << *observer;\ndelete owner;           // 释放后两个指针都不能再解引用",
+    "explain": "先看 int* owner = new int(7)。new int(7) 在堆上建立一個初始值為 7 的 int，並回傳它的位址。owner 存位址，*owner 才是那個整數。這個 int 不會因為指標變數離開作用域就被銷毀。當程式用完它時，delete owner 結束它的生命並釋放記憶體。下面先執行 new / delete 範例，再做原來的 vector 練習。",
+    "concept": "int* owner = new int(7);  // 建立整數，取得位址\nint* observer = owner;   // 複製位址，仍指向同一個整數\n*observer = 9;           // 修改那個整數\ndelete owner;            // 只釋放一次，兩個指標都不能再解引用",
     "starter": "std::vector<int> make_values(int n) {\n  // 返回 n 个 7\n  return {};\n}",
     "answer": "std::vector<int> make_values(int n) { return std::vector<int>(n,7); }",
     "tests": "auto v=make_values(3); assert(v.size()==3); assert(v[2]==7); assert(make_values(0).empty());",
@@ -105,10 +105,11 @@
     ],
     "steps": [
       {
-        "title": "看清地址与释放责任",
-        "explanation": "先预测输出。owner 和 observer 指向同一个整数，修改 *observer 会影响 *owner。delete 只做一次。提前 return 时若漏掉 delete，内存就会泄漏。第 6 课会把清理交给一个局部对象。",
+        "title": "直接執行 new / delete 範例",
+        "explanation": "先猜它會印出 7 還是 9。想想 owner 和 observer 是兩個位址變數，還是兩個不同的整數？這個範例只有一次 new，所以只需要一次 delete。相對地，若 p 指向用 int x = 7 宣告的局部變數（p = &x），x 由作用域管理，不能用 delete p。",
         "code": "#include <iostream>\n\nint main() {\n  int* owner = new int(7);\n  int* observer = owner;\n  *observer = 9;\n  std::cout << *owner << '\\n';\n  delete owner;\n}",
-        "output": "9"
+        "output": "9",
+        "openByDefault": true
       }
     ],
     "predictionFeedback": "离开函数时 x 的生命周期结束。返回的地址不会自动清空，再用 * 读取会产生未定义行为。"
