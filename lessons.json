@@ -3,7 +3,7 @@
     "id": 0,
     "week": 1,
     "title": "变量、类型与输出",
-    "explain": "变量是带名字的存储位置。int 存整数，double 存小数，bool 存真假。声明时先写类型，再写名字；初始化提供第一个值。cout 把值写到屏幕，分号结束一句指令。",
+    "explain": "变量给值起名字。int 存整数。double 存小数。bool 存真假。用 = 给变量初值。用 std::cout 输出。",
     "concept": "int n = 3;\ndouble price = 2.5;\nstd::cout << n * price;",
     "starter": "int total(int count, int price) {\n  // 返回总价\n  return 0;\n}",
     "answer": "int total(int count, int price) { return count * price; }",
@@ -24,7 +24,7 @@
     "id": 1,
     "week": 1,
     "title": "条件、循环与边界",
-    "explain": "if 按条件选择一条路；for 重复做一件事。循环的开始、停止条件、每次变化都要检查。函数把输入变成输出；return 结束函数。这里把 1 到 n 累加；n 为 0 时一次也不循环。",
+    "explain": "if 按条件选择。for 重复执行。读循环时看三处：从哪开始、何时停止、每轮怎么变。把 1 加到 n。n 为 0 时循环不执行。",
     "concept": "for (int i = 1; i <= n; ++i)\n  sum += i;",
     "starter": "int sum_to(int n) {\n  int sum = 0;\n  // 在这里累加\n  return sum;\n}",
     "answer": "int sum_to(int n) { int sum=0; for(int i=1;i<=n;++i) sum+=i; return sum; }",
@@ -45,7 +45,7 @@
     "id": 2,
     "week": 1,
     "title": "函数与值传递",
-    "explain": "函数参数默认复制调用者的值。函数内部改副本不会修改原来的变量。返回值把计算结果交回调用处。先写清输入、输出，再写函数体。",
+    "explain": "函数接收输入。return 把结果交回调用处。按值传参会复制值。改副本不会改原变量。",
     "concept": "int twice(int x) { return x * 2; }\nint a = twice(4);",
     "starter": "int maximum(int a, int b) {\n  return a;\n}",
     "answer": "int maximum(int a,int b) { return a>b?a:b; }",
@@ -66,7 +66,7 @@
     "id": 3,
     "week": 2,
     "title": "引用、指针与 const",
-    "explain": "引用是已有对象的另一个名字，声明后不能改绑。指针保存地址，可以为空；*p 访问指向的对象。const 表示不能通过这个名字修改值。访问空指针是错误。",
+    "explain": "int& 是同一个对象的另一个名字。int* 存地址，可能为空。*p 访问该地址上的对象。先检查 p 再解引用。const int* 表示不能通过 p 改这个整数。",
     "concept": "int x=4;\nint& alias=x;\nint* p=&x;\nalias=5; // x 也变成 5",
     "starter": "void bump(int& value) {\n  // 让原变量加一\n}\nint read_or_zero(const int* p) { return 0; }",
     "answer": "void bump(int& value) { ++value; }\nint read_or_zero(const int* p) { return p ? *p : 0; }",
@@ -87,7 +87,7 @@
     "id": 4,
     "week": 2,
     "title": "栈、堆与生命周期",
-    "explain": "先看 int* owner = new int(7)。new int(7) 在堆上建立一個初始值為 7 的 int，並回傳它的位址。owner 存位址，*owner 才是那個整數。這個 int 不會因為指標變數離開作用域就被銷毀。當程式用完它時，delete owner 結束它的生命並釋放記憶體。下面先執行 new / delete 範例，再做原來的 vector 練習。",
+    "explain": "new int(7) 在堆上建立一个整数，初始值是 7。它返回地址。owner 存地址，*owner 读到 7。指针离开作用域时，堆上的整数还在。用完后，delete owner 释放内存。",
     "concept": "int* owner = new int(7);  // 建立整數，取得位址\nint* observer = owner;   // 複製位址，仍指向同一個整數\n*observer = 9;           // 修改那個整數\ndelete owner;            // 只釋放一次，兩個指標都不能再解引用",
     "starter": "std::vector<int> make_values(int n) {\n  // 返回 n 个 7\n  return {};\n}",
     "answer": "std::vector<int> make_values(int n) { return std::vector<int>(n,7); }",
@@ -106,19 +106,19 @@
     "steps": [
       {
         "title": "直接執行 new / delete 範例",
-        "explanation": "先猜它會印出 7 還是 9。想想 owner 和 observer 是兩個位址變數，還是兩個不同的整數？這個範例只有一次 new，所以只需要一次 delete。相對地，若 p 指向用 int x = 7 宣告的局部變數（p = &x），x 由作用域管理，不能用 delete p。",
+        "explanation": "先猜输出是 7 还是 9。两个指针指向同一个整数，所以只 delete 一次。局部变量 int x = 7 会随作用域结束而销毁。不要对 &x 用 delete。",
         "code": "#include <iostream>\n\nint main() {\n  int* owner = new int(7);\n  int* observer = owner;\n  *observer = 9;\n  std::cout << *owner << '\\n';\n  delete owner;\n}",
         "output": "9",
         "openByDefault": true
       }
     ],
-    "predictionFeedback": "离开函数时 x 的生命周期结束。返回的地址不会自动清空，再用 * 读取会产生未定义行为。"
+    "predictionFeedback": "函数结束时，x 就没了。再解引用那个地址是未定义行为。"
   },
   {
     "id": 5,
     "week": 2,
     "title": "RAII 与智能指针",
-    "explain": "上一课用 new 创建整数，再手动 delete。这里把清理责任放进一个局部对象：局部对象离开花括号时，C++ 自动调用它的析构函数，也就是销毁时执行的清理函数。让资源的生命周期跟着负责它的对象走，就是 RAII。先观察析构发生的时机，再看智能指针如何用同一条规则管理内存。",
+    "explain": "离开花括号时，局部对象会析构。析构就是对象销毁时做的清理。让对象在析构时自动释放它负责的资源，这叫 RAII。",
     "concept": "第 5 课：new → 用指针访问 → 手动 delete\n第 6 课：make_unique → 用智能指针访问 → 所有者析构时释放",
     "starter": "std::unique_ptr<int> make_owner(int value) {\n  return nullptr;\n}",
     "answer": "std::unique_ptr<int> make_owner(int value) { return std::make_unique<int>(value); }",
@@ -131,37 +131,37 @@
     ],
     "correct": 0,
     "hints": [
-      "std::move(p) 给出可移动的表达式。看这里有没有用它来构造接收者 q。",
-      "本课练习只需要用 value 创建并返回一个 unique_ptr。测试代码会替你执行移动。",
+      "找接收者：哪一行构造了 q？",
+      "练习只要创建并返回 unique_ptr。测试会检查移动。",
       "用 std::make_unique<int>(value) 创建一个值为 value 的整数和它的所有者。"
     ],
     "steps": [
       {
         "title": "1. 离开花括号时会发生什么？",
-        "explanation": "Probe 是一个用来观察时机的小类型。~Probe() 是它的析构函数。先预测 inside、destroy、outside 的顺序，再运行。即使从作用域提前 return，已经构造的局部对象也会正常析构。",
+        "explanation": "~Probe() 是析构函数。先猜 inside、destroy、outside 的顺序，再运行。",
         "code": "#include <iostream>\n\nstruct Probe {\n  ~Probe() { std::cout << \"destroy\\n\"; }\n};\n\nint main() {\n  {\n    Probe local;\n    std::cout << \"inside\\n\";\n  }\n  std::cout << \"outside\\n\";\n}",
         "output": "inside\ndestroy\noutside"
       },
       {
         "title": "2. 让 unique_ptr 持有并清理对象",
-        "explanation": "需要动态创建对象且只有一个所有者时，用 std::make_unique<T>(参数)。它创建 T 并返回管理它的 std::unique_ptr<T>，auto 让编译器推导这个类型。*p 取得对象，p->value 访问成员，相当于 (*p).value。p 离开作用域时会释放所持对象。只需在当前作用域使用的普通 int，直接写 int x = 7 即可。",
+        "explanation": "只有一个所有者时，用 make_unique 创建对象。它返回 unique_ptr。*p 访问对象。p->value 等于 (*p).value。p 析构时释放对象。",
         "code": "#include <iostream>\n#include <memory>\n\nstruct Item {\n  int value = 7;\n  ~Item() { std::cout << \"release\\n\"; }\n};\n\nint main() {\n  {\n    auto p = std::make_unique<Item>();\n    std::cout << p->value << '\\n';\n    (*p).value = 9;\n    std::cout << p->value << '\\n';\n  }\n  std::cout << \"outside\\n\";\n}",
         "output": "7\n9\nrelease\noutside"
       },
       {
         "title": "3. 把清理责任交给另一个所有者",
-        "explanation": "写 auto q = p 会编译失败，因为复制所有权会让两边都负责释放。std::move(p) 把 p 标记为可以被移动，真正接手的是用这个表达式构造的 q。只调用 std::move(p) 还没有交接。构造 q 以后，p 为空，q 仍指向原来的对象，q 离开作用域时负责释放。先预测两次检查 p 会得到什么，再运行。",
+        "explanation": "auto q = p 会报错：所有权不能复制。单独写 std::move(p) 只表示允许移动。写 auto q = std::move(p) 才会转移所有权。转移后 p 为空，q 负责释放。",
         "code": "#include <iostream>\n#include <memory>\n#include <utility>\n\nstruct Item {\n  int value = 7;\n  ~Item() { std::cout << \"release\\n\"; }\n};\n\nint main() {\n  auto p = std::make_unique<Item>();\n  (void)std::move(p);  // 没有接收者，只丢弃这个表达式\n  std::cout << (p != nullptr) << '\\n';\n\n  {\n    auto q = std::move(p);\n    std::cout << (p == nullptr) << '\\n';\n    std::cout << q->value << '\\n';\n  }  // q 释放 Item\n  std::cout << \"outside\\n\";\n}",
         "output": "1\n1\n7\nrelease\noutside"
       }
     ],
-    "predictionFeedback": "对。构造 q 才完成所有权交接。p 为空，q 仍能访问原来的整数，并负责释放它。"
+    "predictionFeedback": "p 变空。q 接手原来的整数，也负责释放它。"
   },
   {
     "id": 6,
     "week": 3,
     "title": "拷贝、移动与 std::move",
-    "explain": "拷贝产生独立的值；移动允许接收方接管资源。std::move 本身只转换表达式，真正的移动由构造或赋值完成。被移动的 vector 仍可销毁或重新赋值，但不要假设它一定为空。",
+    "explain": "拷贝得到独立副本。移动让接收方接管资源。std::move 只表示允许移动。移动构造或赋值才接手。移走的 vector 可以重新赋值。别假设它为空。",
     "concept": "std::vector<int> a={1,2};\nauto b=a; // 独立副本\nauto c=std::move(a);",
     "starter": "std::vector<int> take(std::vector<int>& source) {\n  return source; // 改为允许移动\n}",
     "answer": "std::vector<int> take(std::vector<int>& source) { return std::move(source); }",
@@ -175,14 +175,14 @@
     "correct": 0,
     "hints": [
       "拷贝后的容器独立。",
-      "return std::move(source);。注意测试仅检查合法行为，不能仅靠这个测试区分拷贝和移动；请同时检查代码。"
+      "试试 return std::move(source)。本题测试只检查结果，无法区分拷贝和移动。"
     ]
   },
   {
     "id": 7,
     "week": 3,
     "title": "vector、string 与迭代器失效",
-    "explain": "vector 是连续数组，string 是字符序列；二者扩容可能让旧指针和迭代器失效。迭代器像指向容器元素的位置标记。不要在 push_back 后继续使用旧位置；修改结束后重新获取位置。",
+    "explain": "vector 连续存放元素。string 存放字符。迭代器标记元素的位置。扩容可能搬动内存，旧迭代器会失效。修改后重新取位置。",
     "concept": "std::vector<int> v={1};\nv.push_back(2);\nauto it=v.begin(); // 修改之后重新获取",
     "starter": "std::string join(const std::vector<std::string>& words) {\n  // 用单个空格连接，无首尾空格\n  return \"\";\n}",
     "answer": "std::string join(const std::vector<std::string>& words) { std::string r; for(const auto& w:words){ if(!r.empty()) r+=\" \"; r+=w; } return r; }",
@@ -203,7 +203,7 @@
     "id": 8,
     "week": 3,
     "title": "list、unordered_map 与查找",
-    "explain": "list 是链表，单个元素可稳定移动到头部；代价是每个节点有额外开销。unordered_map 通过键查值，平均常数时间，最坏线性时间。find 不会插入，operator[] 在键缺失时会插入默认值。rehash 会让 map 迭代器失效。",
+    "explain": "list 是链表。它能把已有节点移到头部。unordered_map 按键找值，平均是常数时间。find 只查找。键不存在时，[] 会插入默认值。哈希表重排（rehash）会让旧迭代器失效。",
     "concept": "auto it = map.find(key);\nif (it == map.end()) { /* 未命中 */ }",
     "starter": "int lookup(const std::unordered_map<int,int>& m,int key) {\n  // 缺失返回 -1\n  return 0;\n}",
     "answer": "int lookup(const std::unordered_map<int,int>& m,int key) { auto it=m.find(key); return it==m.end()?-1:it->second; }",
@@ -224,7 +224,7 @@
     "id": 9,
     "week": 4,
     "title": "类、接口与封装",
-    "explain": "类把数据和操作放在一起。public 是调用者可使用的接口；private 隐藏内部状态。构造函数建立有效初始状态。接口说明允许做什么，内部表示可以以后改变。",
+    "explain": "类把数据和操作放在一起。构造函数设置初始状态。public 是外部能调用的接口。private 藏起内部数据。",
     "concept": "class Counter {\n  int value_=0;\npublic:\n  void add(){ ++value_; }\n};",
     "starter": "class Counter {\n  int value_=0;\npublic:\n  void add(int n) { }\n  int value() const { return 0; }\n};",
     "answer": "class Counter { int value_=0; public: void add(int n){value_+=n;} int value() const {return value_;} };",
@@ -245,7 +245,7 @@
     "id": 10,
     "week": 4,
     "title": "LRU ①：容量、存储与未命中",
-    "explain": "LRU 是最近最少使用缓存。把最近访问放在 list 头部，最久未用放尾部；map 保存键到 list 节点的位置。第一步先实现容量 0、插入、更新和查找。本课测试还不要求淘汰。约定缺失返回 -1，所以这个教学接口不区分合法值 -1 和缺失。",
+    "explain": "LRU 满了就淘汰最久没用的键。list 头部最新，尾部最旧。map 用键找到节点。本课先做查找、插入和更新。容量为 0 时不存。找不到就返回 -1。",
     "concept": "最近 ← [key: value] [key: value] → 最久",
     "starter": "class LRU {\npublic:\n  explicit LRU(size_t cap) {}\n  int get(int key) { return -1; }\n  void put(int key,int value) {}\n};",
     "answer": "class LRU {\n  size_t cap_;\n  std::list<std::pair<int,int>> items_;\n  std::unordered_map<int,decltype(items_)::iterator> index_;\npublic:\n  explicit LRU(size_t cap):cap_(cap){}\n  int get(int key) {\n    auto it=index_.find(key);\n    if(it==index_.end()) return -1;\n    items_.splice(items_.begin(),items_,it->second);\n    return it->second->second;\n  }\n  void put(int key,int value) {\n    if(cap_==0) return;\n    auto it=index_.find(key);\n    if(it!=index_.end()) { it->second->second=value; items_.splice(items_.begin(),items_,it->second); return; }\n    if(items_.size()==cap_) { index_.erase(items_.back().first); items_.pop_back(); }\n    items_.emplace_front(key,value); index_[key]=items_.begin();\n  }\n};",
@@ -259,14 +259,14 @@
     "correct": 0,
     "hints": [
       "先处理 cap==0，避免访问空链表尾部。",
-      "本步可以先用 map；下一步再加入顺序和淘汰。参考答案展示最终结构，可暂时只读 get 和 put 的前半段。"
+      "先用 map 写查找和更新。参考答案含淘汰，本课可先跳过那段。"
     ]
   },
   {
     "id": 11,
     "week": 4,
     "title": "LRU ②：访问刷新与淘汰",
-    "explain": "get 命中与 put 更新都应把节点移到头部。新键插入且满容量时，先删除尾节点对应的 map 项，再删尾节点。list::splice 在同一链表内移动节点，不使节点迭代器失效。每次操作后，map 和 list 必须一一对应。",
+    "explain": "访问命中或更新旧键时，把节点移到头部。用 splice 移动，节点迭代器仍有效。插入新键前若已满，先删尾节点的 map 记录，再删尾节点。",
     "concept": "get(1): [2,1] → [1,2]\nput(3): [1,2] → [3,1] 淘汰 2",
     "starter": "class LRU {\npublic:\n  explicit LRU(size_t cap) {}\n  int get(int key) { return -1; }\n  void put(int key,int value) {}\n};",
     "answer": "class LRU {\n  size_t cap_;\n  std::list<std::pair<int,int>> items_;\n  std::unordered_map<int,decltype(items_)::iterator> index_;\npublic:\n  explicit LRU(size_t cap):cap_(cap){}\n  int get(int key) {\n    auto it=index_.find(key);\n    if(it==index_.end()) return -1;\n    items_.splice(items_.begin(),items_,it->second);\n    return it->second->second;\n  }\n  void put(int key,int value) {\n    if(cap_==0) return;\n    auto it=index_.find(key);\n    if(it!=index_.end()) { it->second->second=value; items_.splice(items_.begin(),items_,it->second); return; }\n    if(items_.size()==cap_) { index_.erase(items_.back().first); items_.pop_back(); }\n    items_.emplace_front(key,value); index_[key]=items_.begin();\n  }\n};",
@@ -287,7 +287,7 @@
     "id": 12,
     "week": 4,
     "title": "CMake、调试与 Sanitizer",
-    "explain": "编译把源码变成程序；链接把目标文件与库组合。CMake 描述构建规则。调试器允许暂停、查看变量与逐行执行。Sanitizer 是运行时检查工具，能发现许多越界与释放后使用，但不是所有 bug。网页勾选检查器会真实启用 AddressSanitizer 和 UndefinedBehaviorSanitizer。",
+    "explain": "CMake 描述怎么构建程序。LLDB 能暂停程序、单步运行和查看变量。Sanitizer 在运行时检查越界等问题。勾选检查器即可运行检查。",
     "concept": "本机终端：\ncmake -S . -B build\ncmake --build build\nlldb ./build/demo\n(lldb) breakpoint set --name main\n(lldb) run\n(lldb) next\n(lldb) frame variable",
     "starter": "int safe_at(const std::vector<int>& v,size_t i) {\n  // 越界返回 -1，避免未定义行为\n  return v[i];\n}",
     "answer": "int safe_at(const std::vector<int>& v,size_t i) { return i<v.size()?v[i]:-1; }",
