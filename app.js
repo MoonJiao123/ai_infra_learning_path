@@ -5,7 +5,36 @@ function save(){state[$('mode').value==='test'?'drafts':'free'][current]=$('edit
 function navigation(){let w=0;$('nav').replaceChildren();lessons.forEach((l,i)=>{if(l.week!==w){w=l.week;let h=document.createElement('h3');h.textContent=`WEEK 0${w}`;$('nav').append(h);}let b=document.createElement('button');b.textContent=`${state.done[i]?'✓':'○'} ${i+1}. ${l.title}`;b.className=i===current?'active':'';b.onclick=()=>{save();render(i)};$('nav').append(b);});$('progress').textContent=`已通过 ${Object.keys(state.done).length} / ${lessons.length} 课`;}
 const freeStarter='#include <iostream>\nint main() {\n  std::cout << "Hello, C++!\\n";\n}\n';
 function editor(){let key=$('mode').value==='test'?'drafts':'free';$('editor').value=state[key][current]??(key==='drafts'?lessons[current].starter:freeStarter);$('run').textContent=key==='drafts'?'编译并测试':'编译并运行';}
-function render(i){current=Math.max(0,Math.min(i,lessons.length-1));state.current=current;hint=0;persist();let l=lessons[current];for(let k of ['title','explain','concept','tests','answer'])$(k).textContent=l[k];$('week').textContent=`WEEK 0${l.week} / LESSON ${String(current+1).padStart(2,'0')}`;$('prediction').textContent=l.predict;$('choices').replaceChildren();l.choices.forEach((c,j)=>{let b=document.createElement('button');b.textContent=c;b.onclick=()=>{state.predictions[current]=j;persist();$('predictionResult').textContent=j===l.correct?'✓ 对了。现在用代码验证你的理解。':'再想一下：'+l.hints[0];};$('choices').append(b);});$('predictionResult').textContent=state.predictions[current]===l.correct?'✓ 已答对本课预测题。':'';$('hints').textContent='';$('solution').open=false;$('result').className='';$('result').firstElementChild.textContent='准备好后，试着运行一次。';$('output').textContent='';$('mode').value='test';editor();navigation();window.scrollTo(0,0);}
+function renderLessonSteps(steps = []) {
+  const container = $('lessonSteps');
+  container.replaceChildren();
+  if (!steps.length) return;
+
+  const instructions = document.createElement('p');
+  instructions.className = 'muted';
+  instructions.textContent = '按顺序展开。先预测输出，再将完整示例复制到下方编辑器的「自由实验」模式运行。练习代码有独立的草稿。';
+  container.append(instructions);
+
+  for (const step of steps) {
+    const panel = document.createElement('details');
+    const title = document.createElement('summary');
+    const explanation = document.createElement('p');
+    const code = document.createElement('pre');
+    const expected = document.createElement('details');
+    const expectedTitle = document.createElement('summary');
+    const output = document.createElement('pre');
+
+    title.textContent = step.title;
+    explanation.textContent = step.explanation;
+    code.textContent = step.code;
+    expectedTitle.textContent = '核对预期输出';
+    output.textContent = step.output;
+    expected.append(expectedTitle, output);
+    panel.append(title, explanation, code, expected);
+    container.append(panel);
+  }
+}
+function render(i){current=Math.max(0,Math.min(i,lessons.length-1));state.current=current;hint=0;persist();let l=lessons[current];for(let k of ['title','explain','concept','tests','answer'])$(k).textContent=l[k];renderLessonSteps(l.steps);$('week').textContent=`WEEK 0${l.week} / LESSON ${String(current+1).padStart(2,'0')}`;$('prediction').textContent=l.predict;$('choices').replaceChildren();l.choices.forEach((c,j)=>{let b=document.createElement('button');b.textContent=c;b.onclick=()=>{state.predictions[current]=j;persist();$('predictionResult').textContent=j===l.correct?('✓ '+(l.predictionFeedback||'对了。现在用代码验证你的理解。')):'再想一下：'+l.hints[0];};$('choices').append(b);});$('predictionResult').textContent=state.predictions[current]===l.correct?'✓ 已答对本课预测题。':'';$('hints').textContent='';$('solution').open=false;$('result').className='';$('result').firstElementChild.textContent='准备好后，试着运行一次。';$('output').textContent='';$('mode').value='test';editor();navigation();window.scrollTo(0,0);}
 $('editor').oninput=save;$('editor').onkeydown=e=>{if(e.key==='Tab'){e.preventDefault();let t=e.target,a=t.selectionStart,b=t.selectionEnd;t.setRangeText('  ',a,b,'end');save();}};
 $('mode').onchange=editor;$('reset').onclick=()=>{if(confirm('恢复当前模式的初始代码？此课其他进度保留。')){delete state[$('mode').value==='test'?'drafts':'free'][current];editor();persist();}};
 $('resetAll').onclick=()=>{if(confirm('删除全部课程草稿、预测记录与通过进度？')){state={drafts:{},free:{},done:{},predictions:{},failures:[],notes:'',current:0};$('notes').value='';persist();render(0);}};

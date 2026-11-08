@@ -87,8 +87,8 @@
     "id": 4,
     "week": 2,
     "title": "栈、堆与生命周期",
-    "explain": "局部变量在作用域结束时销毁，不能返回它的地址。动态分配的对象可以活得更久，但需要明确所有者。vector 自己管理动态内存；返回 vector 的值很安全，编译器会移动或省略复制。",
-    "concept": "{ int local=4; } // local 到这里结束\n// 不要返回 &local",
+    "explain": "第 4 课用 p 保存地址，用 *p 访问那个地址上的对象。现在加一个问题：对象能活多久，谁负责结束它的生命？局部 int 活到离开它所在的花括号，复制它的地址也不会延长生命周期。用 new 创建的对象可以活过当前作用域，但程序必须安排一次 delete。承担清理责任的一方就是所有者。",
+    "concept": "int x = 7;\nint* p = &x;  // 借用：x 由作用域管理，不要 delete p\n\nint* owner = new int(7);\nint* observer = owner;  // 又一个地址副本\nstd::cout << *observer;\ndelete owner;           // 释放后两个指针都不能再解引用",
     "starter": "std::vector<int> make_values(int n) {\n  // 返回 n 个 7\n  return {};\n}",
     "answer": "std::vector<int> make_values(int n) { return std::vector<int>(n,7); }",
     "tests": "auto v=make_values(3); assert(v.size()==3); assert(v[2]==7); assert(make_values(0).empty());",
@@ -102,14 +102,23 @@
     "hints": [
       "地址还在，不代表对象还活着。",
       "std::vector<int>(n, 7) 创建 n 个值为 7 的元素。"
-    ]
+    ],
+    "steps": [
+      {
+        "title": "看清地址与释放责任",
+        "explanation": "先预测输出。owner 和 observer 指向同一个整数，修改 *observer 会影响 *owner。delete 只做一次。提前 return 时若漏掉 delete，内存就会泄漏。第 6 课会把清理交给一个局部对象。",
+        "code": "#include <iostream>\n\nint main() {\n  int* owner = new int(7);\n  int* observer = owner;\n  *observer = 9;\n  std::cout << *owner << '\\n';\n  delete owner;\n}",
+        "output": "9"
+      }
+    ],
+    "predictionFeedback": "离开函数时 x 的生命周期结束。返回的地址不会自动清空，再用 * 读取会产生未定义行为。"
   },
   {
     "id": 5,
     "week": 2,
     "title": "RAII 与智能指针",
-    "explain": "RAII 的意思是：对象获得资源，析构时自动释放资源。unique_ptr 代表唯一所有权，不能复制；离开作用域自动 delete。shared_ptr 用于确实需要共享生命周期的场景，循环持有可能泄漏。",
-    "concept": "auto p = std::make_unique<int>(7);\n// 离开作用域自动释放",
+    "explain": "上一课用 new 创建整数，再手动 delete。这里把清理责任放进一个局部对象：局部对象离开花括号时，C++ 自动调用它的析构函数，也就是销毁时执行的清理函数。让资源的生命周期跟着负责它的对象走，就是 RAII。先观察析构发生的时机，再看智能指针如何用同一条规则管理内存。",
+    "concept": "第 5 课：new → 用指针访问 → 手动 delete\n第 6 课：make_unique → 用智能指针访问 → 所有者析构时释放",
     "starter": "std::unique_ptr<int> make_owner(int value) {\n  return nullptr;\n}",
     "answer": "std::unique_ptr<int> make_owner(int value) { return std::make_unique<int>(value); }",
     "tests": "auto p=make_owner(9); assert(p && *p==9); auto q=std::move(p); assert(!p); assert(*q==9);",
@@ -121,9 +130,31 @@
     ],
     "correct": 0,
     "hints": [
-      "unique_ptr 的所有权只能有一个。",
-      "使用 std::make_unique<int>(value)。"
-    ]
+      "std::move(p) 给出可移动的表达式。看这里有没有用它来构造接收者 q。",
+      "本课练习只需要用 value 创建并返回一个 unique_ptr。测试代码会替你执行移动。",
+      "用 std::make_unique<int>(value) 创建一个值为 value 的整数和它的所有者。"
+    ],
+    "steps": [
+      {
+        "title": "1. 离开花括号时会发生什么？",
+        "explanation": "Probe 是一个用来观察时机的小类型。~Probe() 是它的析构函数。先预测 inside、destroy、outside 的顺序，再运行。即使从作用域提前 return，已经构造的局部对象也会正常析构。",
+        "code": "#include <iostream>\n\nstruct Probe {\n  ~Probe() { std::cout << \"destroy\\n\"; }\n};\n\nint main() {\n  {\n    Probe local;\n    std::cout << \"inside\\n\";\n  }\n  std::cout << \"outside\\n\";\n}",
+        "output": "inside\ndestroy\noutside"
+      },
+      {
+        "title": "2. 让 unique_ptr 持有并清理对象",
+        "explanation": "需要动态创建对象且只有一个所有者时，用 std::make_unique<T>(参数)。它创建 T 并返回管理它的 std::unique_ptr<T>，auto 让编译器推导这个类型。*p 取得对象，p->value 访问成员，相当于 (*p).value。p 离开作用域时会释放所持对象。只需在当前作用域使用的普通 int，直接写 int x = 7 即可。",
+        "code": "#include <iostream>\n#include <memory>\n\nstruct Item {\n  int value = 7;\n  ~Item() { std::cout << \"release\\n\"; }\n};\n\nint main() {\n  {\n    auto p = std::make_unique<Item>();\n    std::cout << p->value << '\\n';\n    (*p).value = 9;\n    std::cout << p->value << '\\n';\n  }\n  std::cout << \"outside\\n\";\n}",
+        "output": "7\n9\nrelease\noutside"
+      },
+      {
+        "title": "3. 把清理责任交给另一个所有者",
+        "explanation": "写 auto q = p 会编译失败，因为复制所有权会让两边都负责释放。std::move(p) 把 p 标记为可以被移动，真正接手的是用这个表达式构造的 q。只调用 std::move(p) 还没有交接。构造 q 以后，p 为空，q 仍指向原来的对象，q 离开作用域时负责释放。先预测两次检查 p 会得到什么，再运行。",
+        "code": "#include <iostream>\n#include <memory>\n#include <utility>\n\nstruct Item {\n  int value = 7;\n  ~Item() { std::cout << \"release\\n\"; }\n};\n\nint main() {\n  auto p = std::make_unique<Item>();\n  (void)std::move(p);  // 没有接收者，只丢弃这个表达式\n  std::cout << (p != nullptr) << '\\n';\n\n  {\n    auto q = std::move(p);\n    std::cout << (p == nullptr) << '\\n';\n    std::cout << q->value << '\\n';\n  }  // q 释放 Item\n  std::cout << \"outside\\n\";\n}",
+        "output": "1\n1\n7\nrelease\noutside"
+      }
+    ],
+    "predictionFeedback": "对。构造 q 才完成所有权交接。p 为空，q 仍能访问原来的整数，并负责释放它。"
   },
   {
     "id": 6,
