@@ -122,7 +122,7 @@
     "concept": "第 5 课：new → 用指针访问 → 手动 delete\n第 6 课：make_unique → 用智能指针访问 → 所有者析构时释放",
     "starter": "std::unique_ptr<int> make_owner(int value) {\n  return nullptr;\n}",
     "answer": "std::unique_ptr<int> make_owner(int value) { return std::make_unique<int>(value); }",
-    "tests": "auto p=make_owner(9); assert(p && *p==9); auto q=std::move(p); assert(!p); assert(*q==9);",
+    "tests": "auto p = make_owner(9);\nassert(p && *p == 9);  // p 非空，而且指向的整数是 9\n\n// 下面由测试负责：把所有权交给 q。\nauto q = std::move(p);\nassert(!p);       // p 已经空了\nassert(*q == 9);  // q 仍能读到 9",
     "predict": "auto p=make_unique<int>(4); auto q=std::move(p); p 是否为空？",
     "choices": [
       "是",
@@ -155,7 +155,8 @@
         "output": "1\n1\n7\nrelease\noutside"
       }
     ],
-    "predictionFeedback": "p 变空。q 接手原来的整数，也负责释放它。"
+    "predictionFeedback": "p 变空。q 接手原来的整数，也负责释放它。",
+    "exercise": "只改 make_owner 的函数体。用参数 value 创建一个整数，返回管理它的 std::unique_ptr<int>。例如 make_owner(9) 返回的指针应能读到 9。直接点「编译并测试」。"
   },
   {
     "id": 6,
